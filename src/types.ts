@@ -116,4 +116,43 @@ export type CommunicateState = {
   lastDurationOffset: number;
   /** Flag indicating if the stream method has been called */
   streamWasCalled: boolean;
-}; 
+};
+
+/**
+ * Supported audio output formats for Microsoft Edge TTS service.
+ */
+export type AudioOutputFormat =
+  // MP3 formats
+  | 'audio-16khz-32kbitrate-mono-mp3'
+  | 'audio-16khz-64kbitrate-mono-mp3'
+  | 'audio-16khz-128kbitrate-mono-mp3'
+  | 'audio-24khz-48kbitrate-mono-mp3'
+  | 'audio-24khz-96kbitrate-mono-mp3'
+  | 'audio-24khz-160kbitrate-mono-mp3'
+  | 'audio-48khz-96kbitrate-mono-mp3'
+  | 'audio-48khz-192kbitrate-mono-mp3'
+  // Opus formats
+  | 'audio-16khz-16bit-32kbps-mono-opus'
+  | 'audio-24khz-16bit-24kbps-mono-opus'
+  | 'audio-24khz-16bit-48kbps-mono-opus'
+  | 'ogg-16khz-16bit-mono-opus'
+  | 'ogg-24khz-16bit-mono-opus'
+  | 'ogg-48khz-16bit-mono-opus'
+  // WebM formats
+  | 'webm-16khz-16bit-mono-opus'
+  | 'webm-24khz-16bit-24kbps-mono-opus'
+  | 'webm-24khz-16bit-mono-opus'
+  // PCM (Raw) formats
+  | 'raw-8khz-8bit-mono-alaw'
+  | 'raw-8khz-8bit-mono-mulaw'
+  | 'raw-8khz-16bit-mono-pcm'
+  | 'raw-16khz-16bit-mono-pcm'
+  | 'raw-22050hz-16bit-mono-pcm'
+  | 'raw-24khz-16bit-mono-pcm'
+  | 'raw-44100hz-16bit-mono-pcm'
+  | 'raw-48khz-16bit-mono-pcm'
+  // Other formats
+  | 'amr-wb-16000hz'
+  | 'g722-16khz-64kbps'
+  | 'raw-16khz-16bit-mono-truesilk'
+  | 'raw-24khz-16bit-mono-truesilk'; 

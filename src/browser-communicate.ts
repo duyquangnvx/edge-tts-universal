@@ -16,6 +16,7 @@ import {
 import { TTSConfig } from './tts_config';
 import { DEFAULT_VOICE, WSS_URL, SEC_MS_GEC_VERSION } from './constants';
 import { BrowserDRM } from './browser-drm';
+import { AudioOutputFormat } from './types';
 
 // Browser-specific types (avoiding Node.js Buffer dependency)
 export type BrowserTTSChunk = {
@@ -153,6 +154,8 @@ export interface BrowserCommunicateOptions {
   volume?: string;
   /** Pitch adjustment in Hz (e.g., "+5Hz", "-10Hz") */
   pitch?: string;
+  /** Audio output format (default: "audio-24khz-48kbitrate-mono-mp3") */
+  format?: AudioOutputFormat;
   /** WebSocket connection timeout in milliseconds */
   connectionTimeout?: number;
 }
@@ -165,6 +168,7 @@ export interface BrowserCommunicateOptions {
  * ```typescript
  * const communicate = new BrowserCommunicate('Hello, world!', {
  *   voice: 'en-US-EmmaMultilingualNeural',
+ *   format: 'audio-24khz-48kbitrate-mono-mp3',
  * });
  * 
  * for await (const chunk of communicate.stream()) {
@@ -177,6 +181,7 @@ export interface BrowserCommunicateOptions {
 export class BrowserCommunicate {
   private readonly ttsConfig: TTSConfig;
   private readonly texts: Generator<Uint8Array>;
+  private readonly format: AudioOutputFormat;
   private readonly connectionTimeout?: number;
 
   private state: BrowserCommunicateState = {
@@ -191,6 +196,7 @@ export class BrowserCommunicate {
    * 
    * @param text - The text to synthesize
    * @param options - Configuration options for synthesis
+   * @param options.format - Audio output format (default: "audio-24khz-48kbitrate-mono-mp3")
    */
   constructor(text: string, options: BrowserCommunicateOptions = {}) {
     this.ttsConfig = new TTSConfig({
@@ -210,6 +216,7 @@ export class BrowserCommunicate {
       4096,
     );
 
+    this.format = options.format || ('audio-24khz-48kbitrate-mono-mp3' as AudioOutputFormat);
     this.connectionTimeout = options.connectionTimeout;
   }
 
@@ -377,10 +384,10 @@ export class BrowserCommunicate {
       `X-Timestamp:${browserDateToString()}\r\n`
       + 'Content-Type:application/json; charset=utf-8\r\n'
       + 'Path:speech.config\r\n\r\n'
-      + '{"context":{"synthesis":{"audio":{"metadataoptions":{'
-      + '"sentenceBoundaryEnabled":"false","wordBoundaryEnabled":"true"},'
-      + '"outputFormat":"audio-24khz-48kbitrate-mono-mp3"'
-      + '}}}}\r\n'
+      + `{"context":{"synthesis":{"audio":{"metadataoptions":{`
+      + `"sentenceBoundaryEnabled":"false","wordBoundaryEnabled":"true"},`
+      + `"outputFormat":"${this.format}"`
+      + `}}}}\r\n`
     );
 
     websocket.send(

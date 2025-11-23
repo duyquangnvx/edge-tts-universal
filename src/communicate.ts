@@ -17,7 +17,7 @@ import {
   WebSocketError
 } from "./exceptions";
 import { TTSConfig } from './tts_config';
-import { CommunicateState, TTSChunk } from './types';
+import { CommunicateState, TTSChunk, AudioOutputFormat } from './types';
 // Use isomorphic WebSocket that works in both Node.js and browsers
 import WebSocket from 'isomorphic-ws';
 import { DEFAULT_VOICE, WSS_URL, WSS_HEADERS, SEC_MS_GEC_VERSION } from './constants';
@@ -39,6 +39,8 @@ export interface CommunicateOptions {
   volume?: string;
   /** Pitch adjustment in Hz (e.g., "+5Hz", "-10Hz") */
   pitch?: string;
+  /** Audio output format (default: "audio-24khz-48kbitrate-mono-mp3") */
+  format?: AudioOutputFormat;
   /** Proxy URL for requests */
   proxy?: string;
   /** WebSocket connection timeout in milliseconds */
@@ -64,6 +66,7 @@ export interface CommunicateOptions {
 export class Communicate {
   private readonly ttsConfig: TTSConfig;
   private readonly texts: Generator<Buffer>;
+  private readonly format: AudioOutputFormat;
   private readonly proxy?: string;
   private readonly connectionTimeout?: number;
 
@@ -79,6 +82,7 @@ export class Communicate {
    * 
    * @param text - The text to synthesize
    * @param options - Configuration options for synthesis
+   * @param options.format - Audio output format (default: "audio-24khz-48kbitrate-mono-mp3")
    */
   constructor(text: string, options: CommunicateOptions = {}) {
     this.ttsConfig = new TTSConfig({
@@ -98,6 +102,7 @@ export class Communicate {
       4096,
     );
 
+    this.format = options.format || ('audio-24khz-48kbitrate-mono-mp3' as AudioOutputFormat);
     this.proxy = options.proxy;
     this.connectionTimeout = options.connectionTimeout;
   }
@@ -219,10 +224,10 @@ export class Communicate {
       `X-Timestamp:${dateToString()}\r\n`
       + 'Content-Type:application/json; charset=utf-8\r\n'
       + 'Path:speech.config\r\n\r\n'
-      + '{"context":{"synthesis":{"audio":{"metadataoptions":{'
-      + '"sentenceBoundaryEnabled":"false","wordBoundaryEnabled":"true"},'
-      + '"outputFormat":"audio-24khz-48kbitrate-mono-mp3"'
-      + '}}}}\r\n'
+      + `{"context":{"synthesis":{"audio":{"metadataoptions":{`
+      + `"sentenceBoundaryEnabled":"false","wordBoundaryEnabled":"true"},`
+      + `"outputFormat":"${this.format}"`
+      + `}}}}\r\n`
     );
 
     websocket.send(

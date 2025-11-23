@@ -17,6 +17,7 @@ import {
 import { TTSConfig } from './tts_config';
 import { DEFAULT_VOICE, WSS_URL, SEC_MS_GEC_VERSION, WSS_HEADERS } from './constants';
 import { IsomorphicDRM } from './isomorphic-drm';
+import { AudioOutputFormat } from './types';
 
 // Isomorphic buffer handling - works in both Node.js and browsers
 const IsomorphicBuffer = {
@@ -124,6 +125,8 @@ export interface IsomorphicCommunicateOptions {
   volume?: string;
   /** Pitch adjustment in Hz (e.g., "+5Hz", "-10Hz") */
   pitch?: string;
+  /** Audio output format (default: "audio-24khz-48kbitrate-mono-mp3") */
+  format?: AudioOutputFormat;
   /** Proxy URL for requests (Node.js only) */
   proxy?: string;
   /** WebSocket connection timeout in milliseconds */
@@ -151,6 +154,7 @@ export interface IsomorphicCommunicateOptions {
 export class IsomorphicCommunicate {
   private readonly ttsConfig: TTSConfig;
   private readonly texts: Generator<Uint8Array>;
+  private readonly format: AudioOutputFormat;
   // Universal build - proxy and environment detection removed for compatibility
 
   private state: IsomorphicCommunicateState = {
@@ -165,6 +169,7 @@ export class IsomorphicCommunicate {
    * 
    * @param text - The text to synthesize
    * @param options - Configuration options for synthesis
+   * @param options.format - Audio output format (default: "audio-24khz-48kbitrate-mono-mp3")
    */
   constructor(text: string, options: IsomorphicCommunicateOptions = {}) {
     this.ttsConfig = new TTSConfig({
@@ -190,6 +195,7 @@ export class IsomorphicCommunicate {
       }
     })();
 
+    this.format = options.format || ('audio-24khz-48kbitrate-mono-mp3' as AudioOutputFormat);
     // Note: proxy and connectionTimeout are not supported in universal builds
     // for maximum compatibility across environments
   }
@@ -353,10 +359,10 @@ export class IsomorphicCommunicate {
       `X-Timestamp:${dateToString()}\r\n`
       + 'Content-Type:application/json; charset=utf-8\r\n'
       + 'Path:speech.config\r\n\r\n'
-      + '{"context":{"synthesis":{"audio":{"metadataoptions":{'
-      + '"sentenceBoundaryEnabled":"false","wordBoundaryEnabled":"true"},'
-      + '"outputFormat":"audio-24khz-48kbitrate-mono-mp3"'
-      + '}}}}\r\n'
+      + `{"context":{"synthesis":{"audio":{"metadataoptions":{`
+      + `"sentenceBoundaryEnabled":"false","wordBoundaryEnabled":"true"},`
+      + `"outputFormat":"${this.format}"`
+      + `}}}}\r\n`
     );
 
     // Send SSML
