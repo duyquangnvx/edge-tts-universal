@@ -1,6 +1,6 @@
 {
   "name": "@duyquangnvx/edge-tts-universal",
-  "version": "1.4.2",
+  "version": "1.4.5",
   "description": "Universal text-to-speech library using Microsoft Edge's online TTS service. Works in Node.js and browsers WITHOUT needing Microsoft Edge, Windows, or an API key",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -137,7 +137,8 @@
     "size": "size-limit",
     "analyze": "npx @next/bundle-analyzer",
     "publish:jsr": "deno publish",
-    "publish:npm": "npm publish",
+    "publish:npm": "npm publish --access public",
+    "publish": "npm run publish:npm",
     "publish:all": "npm run publish:npm && npm run publish:jsr"
   },
   "keywords": [
